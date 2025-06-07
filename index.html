@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Carrington Event: When the Sun Attacked Earth</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.waves.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        .custom-cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #00ffff;
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 10000;
+            transition: transform 0.1s ease;
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        .hero {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+        }
+
+        #vanta-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ffa726, #ffeb3b, #66bb6a, #42a5f5, #ab47bc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeInUp 2s ease 1s forwards;
+        }
+
+        .cta-button {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #ff4081, #3f51b5);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fadeInUp 2s ease 2s forwards;
+            box-shadow: 0 10px 30px rgba(255, 64, 129, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 64, 129, 0.5);
+        }
+
+        .section {
+            min-height: 100vh;
+            padding: 100px 20px;
+            position: relative;
+        }
+
+        .timeline {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 100px;
+            bottom: 100px;
+            width: 4px;
+            background: linear-gradient(to bottom, #ff4081, #3f51b5, #00bcd4);
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin: 100px 0;
+            opacity: 0;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-left: 60%;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-right: 60%;
+        }
+
+        .timeline-content {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .timeline-date {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ff4081, #3f51b5);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(255, 64, 129, 0.3);
+        }
+
+        .solar-storm-viz {
+            height: 100vh;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1a2e, #000);
+        }
+
+        #three-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .modern-impact {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 100px 20px;
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .impact-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            transform: translateY(50px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .impact-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .impact-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff4081, #3f51b5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sources {
+            background: #1a1a2e;
+            padding: 100px 20px;
+        }
+
+        .sources-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .source-list {
+            text-align: left;
+            margin-top: 40px;
+        }
+
+        .source-item {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid #ff4081;
+        }
+
+        .electromagnetic-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.3;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .aurora-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, #00ffff, transparent);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+        }
+
+        .team-info {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 40px auto 0;
+        }
+
+        .team-member {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Solar Flare Intensity Slider */
+        .intensity-controls {
+            position: absolute;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 64, 129, 0.3);
+            z-index: 100;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(255, 64, 129, 0.2);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .intensity-controls.minimized {
+            width: 60px;
+            padding: 15px;
+            cursor: pointer;
+        }
+
+        .intensity-controls.minimized .control-content {
+            display: none;
+        }
+
+        .intensity-controls.minimized .minimize-btn {
+            transform: rotate(180deg);
+        }
+
+        .minimize-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 64, 129, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .minimize-btn:hover {
+            background: rgba(255, 64, 129, 1);
+            transform: scale(1.1);
+        }
+
+        .control-content {
+            transition: opacity 0.3s ease;
+        }
+
+        /* 3D Loading Animation */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(255, 64, 129, 0.3);
+            border-top: 4px solid #ff4081;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .loading-progress {
+            color: #ff4081;
+            font-size: 0.9rem;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Earth Animation */
+        .earth-container {
+            animation: earthEntry 2s ease-out;
+        }
+
+        @keyframes earthEntry {
+            0% {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2) rotate(-90deg);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        /* Magnetosphere Animation */
+        .magnetosphere-container {
+            animation: magnetosphereEntry 3s ease-out 0.5s both;
+        }
+
+        @keyframes magnetosphereEntry {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0.2;
+            }
+        }
+
+        /* Particle System Animation */
+        .particles-container {
+            animation: particlesEntry 2s ease-out 1s both;
+        }
+
+        @keyframes particlesEntry {
+            0% {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .intensity-slider {
+            width: 100%;
+            margin: 20px 0;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #4CAF50, #FFC107, #FF5722);
+            outline: none;
+        }
+
+        .intensity-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Historical Comparison Timeline */
+        .comparison-timeline {
+            background: linear-gradient(135deg, #2d1b69, #11998e);
+            padding: 100px 20px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .historical-event {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(30px) scale(0.95);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .historical-event:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(255, 64, 129, 0.2);
+        }
+
+        .historical-event::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(45deg, #ff4081, #3f51b5);
+        }
+
+        .event-year {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff4081;
+            margin-bottom: 10px;
+        }
+
+        /* Eyewitness Accounts */
+        .eyewitness-section {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 100px 20px;
+        }
+
+        .eyewitness-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .eyewitness-account {
+            background: rgba(139, 69, 19, 0.2);
+            border: 2px solid #8B4513;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+            font-family: 'Times New Roman', serif;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .eyewitness-account::before {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            color: #D2691E;
+            font-family: serif;
+        }
+
+        .eyewitness-quote {
+            font-style: italic;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #F5DEB3;
+        }
+
+        .eyewitness-attribution {
+            text-align: right;
+            font-weight: bold;
+            color: #DEB887;
+            border-top: 1px solid #8B4513;
+            padding-top: 15px;
+        }
+
+        /* Preparedness Section */
+        .preparedness-section {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef, #fecfef, #fad0c4);
+            color: #333;
+            padding: 100px 20px;
+        }
+
+        .preparedness-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .preparedness-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .preparedness-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .preparedness-steps {
+            list-style: none;
+            padding: 0;
+        }
+
+        .preparedness-steps li {
+            background: rgba(255, 64, 129, 0.1);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #ff4081;
+        }
+
+        /* Starfield Background */
+        .starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #000000 100%);
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .nebula {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(255, 64, 129, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(63, 81, 181, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 80%, rgba(156, 39, 176, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            animation: nebulaFloat 20s infinite ease-in-out;
+        }
+
+        @keyframes nebulaFloat {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(2deg); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.2rem; }
+            .timeline-item:nth-child(odd) .timeline-content,
+            .timeline-item:nth-child(even) .timeline-content {
+                margin-left: 20px;
+                margin-right: 20px;
+            }
+            .timeline::before { left: 20px; }
+            .timeline-date { left: 20px; transform: translateY(-50%); }
+            .intensity-controls {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                right: auto;
+                transform: none;
+                margin: 20px auto;
+                min-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-cursor"></div>
+    <div class="starfield"></div>
+    <div class="nebula"></div>
+    <div class="electromagnetic-field"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div id="vanta-bg"></div>
+        <div class="hero-content">
+            <h1>The Carrington Event</h1>
+            <p>September 1-2, 1859: When the Sun Nearly Destroyed Civilization</p>
+            <button class="cta-button" onclick="scrollToTimeline()">Witness the Storm</button>
+        </div>
+        <div class="aurora-particles"></div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section class="section timeline-section" id="timeline">
+        <div class="timeline">
+            <h2 style="text-align: center; font-size: 3rem; margin-bottom: 80px; background: linear-gradient(45deg, #ff4081, #3f51b5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">The 9 Days That Changed Everything</h2>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Aug 28</div>
+                <div class="timeline-content">
+                    <h3>The Awakening</h3>
+                    <p>Richard Carrington observes intense sunspot activity from his private observatory in Redhill, Surrey. He sketches what he sees, not knowing he's documenting the birth of a cosmic monster.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Sep 1</div>
+                <div class="timeline-content">
+                    <h3>White Light Flare</h3>
+                    <p>At 11:18 AM, Carrington witnesses the impossible: brilliant white light erupting from the Sun's surface. For the first time in history, a human observes a solar flare with the naked eye.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Sep 1-2</div>
+                <div class="timeline-content">
+                    <h3>The Magnetic Storm Begins</h3>
+                    <p>18 hours later, the coronal mass ejection slams into Earth's magnetosphere. Auroras blaze across the sky from pole to pole. Telegraph operators receive electric shocks. Wires spark and catch fire.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Sep 2</div>
+                <div class="timeline-content">
+                    <h3>Global Chaos</h3>
+                    <p>Telegraph systems worldwide fail catastrophically. Some operators continue transmitting using only the induced current from the storm. Auroras are seen as far south as the Caribbean and Rome.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Sep 3-4</div>
+                <div class="timeline-content">
+                    <h3>Lingering Effects</h3>
+                    <p>Geomagnetic disturbances continue. Gold miners in the Rocky Mountains wake up thinking it's dawn due to the bright auroras. Ships navigate by aurora light alone.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3D Solar Storm Visualization -->
+    <section class="solar-storm-viz">
+        <canvas id="three-canvas"></canvas>
+        <div id="storm-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 10; transition: opacity 1s ease;">
+            <h2 style="font-size: 3rem; margin-bottom: 20px;">The Storm Strikes Earth</h2>
+            <p style="font-size: 1.3rem; max-width: 600px;">A coronal mass ejection traveling at 2,000 km/s collides with Earth's magnetosphere, creating the most powerful geomagnetic storm in recorded history.</p>
+        </div>
+
+        <!-- Solar Flare Intensity Controls -->
+        <div class="intensity-controls" id="intensityControls">
+            <button class="minimize-btn" id="minimizeBtn">−</button>
+            <div class="control-content">
+                <h4 style="margin-bottom: 15px; color: #fff;">Solar Storm Intensity</h4>
+                <input type="range" min="1" max="10" value="9" class="intensity-slider" id="intensitySlider">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #ccc;">
+                    <span>Weak</span>
+                    <span>Carrington</span>
+                    <span>Extreme</span>
+                </div>
+                <div id="intensity-display" style="text-align: center; margin-top: 15px; font-weight: bold; color: #ff4081; font-size: 1.2rem;">
+                    Level 9: Carrington Class
+                </div>
+                <div id="intensity-effects" style="margin-top: 15px; font-size: 1rem; color: #fff; background: rgba(255, 64, 129, 0.1); padding: 10px; border-radius: 10px;">
+                    Global power grid failure, satellite destruction, internet collapse
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Historical Comparison Timeline -->
+    <section class="comparison-timeline">
+        <div style="text-align: center; margin-bottom: 80px;">
+            <h2 style="font-size: 3rem; margin-bottom: 30px;">Other Historic Space Weather Events</h2>
+            <p style="font-size: 1.5rem; max-width: 800px; margin: 0 auto;">The Carrington Event wasn't alone - here are other significant geomagnetic storms throughout history:</p>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="historical-event">
+                <div class="event-year">1770</div>
+                <h3>The Great Aurora of 1770</h3>
+                <p>Witnessed across Europe and Asia, this event caused auroras visible as far south as southern Italy and created compass deflections of several degrees.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">1859</div>
+                <h3>The Carrington Event</h3>
+                <p><strong>THE BIG ONE</strong> - The most powerful geomagnetic storm in recorded history. Telegraph systems worldwide failed catastrophically.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">1872</div>
+                <h3>Chapman-Silverman Storm</h3>
+                <p>Another massive solar storm that disrupted telegraph communications globally and produced auroras visible in the tropics.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">1921</div>
+                <h3>New York Railroad Storm</h3>
+                <p>First major space weather event of the electrical age. Railway signal systems failed across the northeastern United States.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">1989</div>
+                <h3>Quebec Blackout</h3>
+                <p>Entire province of Quebec lost power for 9 hours. Satellites tumbled out of control. First taste of modern vulnerability.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">2003</div>
+                <h3>Halloween Storms</h3>
+                <p>Series of solar flares knocked out GPS systems, grounded flights, and damaged satellites worth hundreds of millions.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">2012</div>
+                <h3>The Near Miss</h3>
+                <p>A Carrington-level CME barely missed Earth by 9 days. If it had hit, damages would have exceeded $2 trillion.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">Future?</div>
+                <h3>The Next Big One</h3>
+                <p>Scientists estimate a 12% chance of another Carrington-level event hitting Earth in the next decade. Are we ready?</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Eyewitness Accounts -->
+    <section class="eyewitness-section">
+        <div class="eyewitness-container">
+            <h2 style="text-align: center; font-size: 3rem; margin-bottom: 50px; background: linear-gradient(45deg, #D2691E, #F4A460); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Voices from 1859</h2>
+            <p style="text-align: center; font-size: 1.3rem; margin-bottom: 60px; color: #DEB887;">Firsthand accounts from those who witnessed the impossible</p>
+
+            <div class="eyewitness-account">
+                <div class="eyewitness-quote">
+                    "The whole sky appeared like a sea of fire; the trees, the houses, the fences, and everything around appeared to be enveloped in supernatural fire that seemed to threaten instantaneous destruction to everything on earth."
+                </div>
+                <div class="eyewitness-attribution">
+                    — Elias Loomis, Professor of Natural Philosophy, Yale College
+                </div>
+            </div>
+
+            <div class="eyewitness-account">
+                <div class="eyewitness-quote">
+                    "I was awakened at 1 o'clock by the light in my room, and at first thought Aurora, Colorado was on fire. The light was so bright I could see to read common print."
+                </div>
+                <div class="eyewitness-attribution">
+                    — Gold miner in the Rocky Mountains, September 2, 1859
+                </div>
+            </div>
+
+            <div class="eyewitness-account">
+                <div class="eyewitness-quote">
+                    "The battery was disconnected at both ends of the line, and we worked for about two hours with the celestial battery alone. The current was very strong at times, and we could work faster than with our own power."
+                </div>
+                <div class="eyewitness-attribution">
+                    — Telegraph operator between Boston and Portland
+                </div>
+            </div>
+
+            <div class="eyewitness-account">
+                <div class="eyewitness-quote">
+                    "At the Colaba Observatory the needle was deflected 1° 23' from the magnetic meridian. Such a disturbance was never before observed at this station."
+                </div>
+                <div class="eyewitness-attribution">
+                    — Dr. Christopher Hansteen, Colaba Observatory, Bombay
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modern Impact Section -->
+    <section class="modern-impact">
+        <div style="text-align: center; margin-bottom: 80px;">
+            <h2 style="font-size: 3rem; margin-bottom: 30px;">If It Happened Today...</h2>
+            <p style="font-size: 1.5rem; max-width: 800px; margin: 0 auto;">A Carrington-level event would cause $2 trillion in damage and take 4-10 years to recover from. Here's what would fail:</p>
+        </div>
+
+        <div class="impact-grid">
+            <div class="impact-card">
+                <div class="impact-icon">📡</div>
+                <h3>Satellites</h3>
+                <p>GPS, communications, and weather satellites would be destroyed or severely damaged, affecting everything from navigation to banking.</p>
+            </div>
+
+            <div class="impact-card">
+                <div class="impact-icon">⚡</div>
+                <h3>Power Grids</h3>
+                <p>Massive transformers would burn out, causing blackouts affecting hundreds of millions. Some areas might be without power for months.</p>
+            </div>
+
+            <div class="impact-card">
+                <div class="impact-icon">🌐</div>
+                <h3>Internet</h3>
+                <p>Undersea cables would fail, fragmenting the global internet. Social media, e-commerce, and cloud services would collapse.</p>
+            </div>
+
+            <div class="impact-card">
+                <div class="impact-icon">✈️</div>
+                <h3>Aviation</h3>
+                <p>Airlines would be forced to ground flights due to navigation failures and radiation exposure risks for passengers and crew.</p>
+            </div>
+
+            <div class="impact-card">
+                <div class="impact-icon">🏦</div>
+                <h3>Financial Systems</h3>
+                <p>ATMs, credit card networks, and stock exchanges would fail, potentially triggering a global economic collapse.</p>
+            </div>
+
+            <div class="impact-card">
+                <div class="impact-icon">🚗</div>
+                <h3>Modern Vehicles</h3>
+                <p>Cars with electronic systems would suffer widespread failures. Traffic lights, fuel pumps, and logistics would be severely disrupted.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Preparedness Section -->
+    <section class="preparedness-section">
+        <div style="text-align: center; margin-bottom: 80px;">
+            <h2 style="font-size: 3rem; margin-bottom: 30px; color: #333;">Are We Ready for the Next Carrington Event?</h2>
+            <p style="font-size: 1.5rem; max-width: 800px; margin: 0 auto; color: #555;">Scientists estimate a 12% chance of a Carrington-level event in the next decade. Here's how we can prepare:</p>
+        </div>
+
+        <div class="preparedness-grid">
+            <div class="preparedness-card">
+                <div class="preparedness-icon">🏛️</div>
+                <h3>Government & Infrastructure</h3>
+                <ul class="preparedness-steps">
+                    <li>Install surge protectors on critical power grid transformers</li>
+                    <li>Create redundant communication networks</li>
+                    <li>Develop rapid satellite replacement programs</li>
+                    <li>Establish emergency protocols for aviation industry</li>
+                    <li>Build hardened underground facilities for essential services</li>
+                </ul>
+            </div>
+
+            <div class="preparedness-card">
+                <div class="preparedness-icon">🏢</div>
+                <h3>Businesses & Organizations</h3>
+                <ul class="preparedness-steps">
+                    <li>Back up critical data to multiple offline locations</li>
+                    <li>Invest in Faraday cage protection for servers</li>
+                    <li>Develop manual backup procedures for automated systems</li>
+                    <li>Create emergency supply chains that don't rely on GPS</li>
+                    <li>Train staff for extended power outages</li>
+                </ul>
+            </div>
+
+            <div class="preparedness-card">
+                <div class="preparedness-icon">🏠</div>
+                <h3>Individuals & Families</h3>
+                <ul class="preparedness-steps">
+                    <li>Keep 2 weeks of food, water, and medical supplies</li>
+                    <li>Have battery-powered or hand-crank radio</li>
+                    <li>Store cash - ATMs and card systems may fail</li>
+                    <li>Learn basic first aid and emergency skills</li>
+                    <li>Connect with neighbors to build community resilience</li>
+                </ul>
+            </div>
+
+            <div class="preparedness-card">
+                <div class="preparedness-icon">🔬</div>
+                <h3>Scientific Monitoring</h3>
+                <ul class="preparedness-steps">
+                    <li>Expand space weather monitoring satellite network</li>
+                    <li>Improve solar flare prediction models</li>
+                    <li>Develop early warning systems with 48+ hour lead time</li>
+                    <li>Research protective technologies for spacecraft</li>
+                    <li>Study historical events to better predict future impacts</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Historical Comparison Timeline -->
+    <section class="comparison-timeline">
+        <div style="text-align: center; margin-bottom: 80px;">
+            <h2 style="font-size: 3rem; margin-bottom: 30px;">Other Historic Space Weather Events</h2>
+            <p style="font-size: 1.5rem; max-width: 800px; margin: 0 auto;">The Carrington Event wasn't alone - here are other significant geomagnetic storms throughout history:</p>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="historical-event">
+                <div class="event-year">1770</div>
+                <h3>The Great Aurora of 1770</h3>
+                <p>Witnessed across Europe and Asia, this event caused auroras visible as far south as southern Italy and created compass deflections of several degrees.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">1859</div>
+                <h3>The Carrington Event</h3>
+                <p><strong>THE BIG ONE</strong> - The most powerful geomagnetic storm in recorded history. Telegraph systems worldwide failed catastrophically.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">1872</div>
+                <h3>Chapman-Silverman Storm</h3>
+                <p>Another massive solar storm that disrupted telegraph communications globally and produced auroras visible in the tropics.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">1921</div>
+                <h3>New York Railroad Storm</h3>
+                <p>First major space weather event of the electrical age. Railway signal systems failed across the northeastern United States.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">1989</div>
+                <h3>Quebec Blackout</h3>
+                <p>Entire province of Quebec lost power for 9 hours. Satellites tumbled out of control. First taste of modern vulnerability.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">2003</div>
+                <h3>Halloween Storms</h3>
+                <p>Series of solar flares knocked out GPS systems, grounded flights, and damaged satellites worth hundreds of millions.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">2012</div>
+                <h3>The Near Miss</h3>
+                <p>A Carrington-level CME barely missed Earth by 9 days. If it had hit, damages would have exceeded $2 trillion.</p>
+            </div>
+
+            <div class="historical-event">
+                <div class="event-year">Future?</div>
+                <h3>The Next Big One</h3>
+                <p>Scientists estimate a 12% chance of another Carrington-level event hitting Earth in the next decade. Are we ready?</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Eyewitness Accounts -->
+    <section class="eyewitness-section">
+        <div class="eyewitness-container">
+            <h2 style="text-align: center; font-size: 3rem; margin-bottom: 50px; background: linear-gradient(45deg, #D2691E, #F4A460); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Voices from 1859</h2>
+            <p style="text-align: center; font-size: 1.3rem; margin-bottom: 60px; color: #DEB887;">Firsthand accounts from those who witnessed the impossible</p>
+
+            <div class="eyewitness-account">
+                <div class="eyewitness-quote">
+                    "The whole sky appeared like a sea of fire; the trees, the houses, the fences, and everything around appeared to be enveloped in supernatural fire that seemed to threaten instantaneous destruction to everything on earth."
+                </div>
+                <div class="eyewitness-attribution">
+                    — Elias Loomis, Professor of Natural Philosophy, Yale College
+                </div>
+            </div>
+
+            <div class="eyewitness-account">
+                <div class="eyewitness-quote">
+                    "I was awakened at 1 o'clock by the light in my room, and at first thought Aurora, Colorado was on fire. The light was so bright I could see to read common print."
+                </div>
+                <div class="eyewitness-attribution">
+                    — Gold miner in the Rocky Mountains, September 2, 1859
+                </div>
+            </div>
+
+            <div class="eyewitness-account">
+                <div class="eyewitness-quote">
+                    "The battery was disconnected at both ends of the line, and we worked for about two hours with the celestial battery alone. The current was very strong at times, and we could work faster than with our own power."
+                </div>
+                <div class="eyewitness-attribution">
+                    — Telegraph operator between Boston and Portland
+                </div>
+            </div>
+
+            <div class="eyewitness-account">
+                <div class="eyewitness-quote">
+                    "At the Colaba Observatory the needle was deflected 1° 23' from the magnetic meridian. Such a disturbance was never before observed at this station."
+                </div>
+                <div class="eyewitness-attribution">
+                    — Dr. Christopher Hansteen, Colaba Observatory, Bombay
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Information -->
+    <!-- Team Information -->
+    <section class="team-info">
+        <h2 style="font-size: 3rem; margin-bottom: 20px;">Team</h2>
+        <p style="font-size: 1.3rem; margin-bottom: 40px;">Bringing history to life through goofy technology</p>
+
+        <div class="team-grid">
+            <div class="team-member">
+                <h3>Ayush</h3>
+                <p><strong>Grade 10 - Alberta</strong></p>
+                <p>Historical Researcher & UI/UX Designer - Researched primary sources and created the stunning visual design</p>
+            </div>
+
+            <div class="team-member">
+                <h3>Teja</h3>
+                <p><strong>Grade 10 - Alberta</strong></p>
+                <p>Lead Developer & 3D Graphics Specialist - Implemented the Three.js visualizations and GSAP animations
+                </p>
+            </div>
+        </div>
+    </section>
+    <!-- Sources Section -->
+    <section class="sources">
+        <div class="sources-content">
+            <h2 style="font-size: 3rem; margin-bottom: 30px;">Historical Sources</h2>
+            <p style="font-size: 1.3rem; margin-bottom: 40px;">Our research is based on peer-reviewed academic sources and historical records</p>
+
+            <div class="source-list">
+                <div class="source-item">
+                    <strong>1.</strong> Clark, S. (2007). "The Sun Kings: The Unexpected Tragedy of Richard Carrington and the Tale of How Modern Astronomy Began." Princeton University Press.
+                </div>
+
+                <div class="source-item">
+                    <strong>2.</strong> Love, J. J., Hayakawa, H., & Cliver, E. W. (2019). "On the intensity of the magnetic superstorm of September 1859." Space Weather, 17(1), 37-45.
+                </div>
+
+                <div class="source-item">
+                    <strong>3.</strong> Green, J. L., & Boardsen, S. (2006). "Duration and extent of the great auroral storm of 1859." Advances in Space Research, 38(2), 130-135.
+                </div>
+
+                <div class="source-item">
+                    <strong>4.</strong> National Academy of Sciences. (2008). "Severe Space Weather Events: Understanding Societal and Economic Impacts." The National Academies Press.
+                </div>
+
+                <div class="source-item">
+                    <strong>5.</strong> Carrington, R. C. (1859). "Description of a Singular Appearance seen in the Sun on September 1, 1859." Monthly Notices of the Royal Astronomical Society, 20, 13-15.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Custom cursor
+        const cursor = document.querySelector('.custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        // Enhanced Starfield Background
+        function createStarfield() {
+            const starfield = document.querySelector('.starfield');
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 2 + 's';
+                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                starfield.appendChild(star);
+            }
+        }
+        createStarfield();
+
+        // Vanta.js cosmic background for hero section
+        VANTA.WAVES({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.0,
+            minWidth: 200.0,
+            scale: 1.0,
+            scaleMobile: 1.0,
+            color: 0x1a1a2e,
+            shininess: 30.0,
+            waveHeight: 15.0,
+            waveSpeed: 0.75,
+            zoom: 0.65
+        });
+
+        // Three.js Solar Storm Visualization
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Create Earth
+        const earthGeometry = new THREE.SphereGeometry(2, 32, 32);
+        const earthMaterial = new THREE.MeshBasicMaterial({
+            color: 0x4285f4,
+            transparent: true,
+            opacity: 0.8
+        });
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        scene.add(earth);
+
+        // Create magnetosphere
+        const magnetosphereGeometry = new THREE.SphereGeometry(4, 32, 32);
+        const magnetosphereMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.2,
+            wireframe: true
+        });
+        const magnetosphere = new THREE.Mesh(magnetosphereGeometry, magnetosphereMaterial);
+        scene.add(magnetosphere);
+
+        // Create realistic solar wind particle system
+        const particleCount = 800;
+        const particles = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        const velocities = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount; i++) {
+            // Position particles in a streaming pattern from the left side
+            positions[i * 3] = Math.random() * 30 - 50; // X: far left
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 40; // Y: spread vertically
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 40; // Z: spread in depth
+
+            // Solar wind colors: oranges, yellows, and reds
+            const intensity = Math.random();
+            colors[i * 3] = 1; // Red component (always high for solar)
+            colors[i * 3 + 1] = 0.3 + intensity * 0.7; // Orange to yellow
+            colors[i * 3 + 2] = intensity * 0.3; // Minimal blue
+
+            // Velocity for streaming effect
+            velocities[i * 3] = 0.8 + Math.random() * 0.4; // X velocity (rightward)
+            velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.2; // Slight Y drift
+            velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.2; // Slight Z drift
+        }
+
+        particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const particleMaterial = new THREE.PointsMaterial({
+            size: 0.3,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.9,
+            blending: THREE.AdditiveBlending // Makes particles glow
+        });
+
+        const particleSystem = new THREE.Points(particles, particleMaterial);
+        scene.add(particleSystem);
+
+        camera.position.z = 15;
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            earth.rotation.y += 0.005;
+            magnetosphere.rotation.y += 0.003;
+            magnetosphere.rotation.x += 0.002;
+
+            // Animate solar wind particles
+            const positions = particleSystem.geometry.attributes.position.array;
+            for (let i = 0; i < particleCount; i++) {
+                // Move particles towards Earth (positive X direction)
+                positions[i * 3] += velocities[i * 3] * 0.8;
+                positions[i * 3 + 1] += velocities[i * 3 + 1];
+                positions[i * 3 + 2] += velocities[i * 3 + 2];
+
+                // Reset particles that have passed Earth
+                if (positions[i * 3] > 50) {
+                    positions[i * 3] = -50 - Math.random() * 20;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 40;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 40;
+                }
+            }
+            particleSystem.geometry.attributes.position.needsUpdate = true;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Timeline animations
+        gsap.utils.toArray('.timeline-item').forEach((item, index) => {
+            gsap.fromTo(item,
+                { opacity: 0, x: index % 2 === 0 ? -100 : 100 },
+                {
+                    opacity: 1,
+                    x: 0,
+                    duration: 1,
+                    scrollTrigger: {
+                        trigger: item,
+                        start: "top 80%",
+                        end: "bottom 20%",
+                        toggleActions: "play none none reverse"
+                    }
+                }
+            );
+        });
+
+        // Impact cards animation
+        gsap.utils.toArray('.impact-card').forEach((card, index) => {
+            gsap.fromTo(card,
+                { opacity: 0, y: 50 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.8,
+                    delay: index * 0.1,
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 85%",
+                        toggleActions: "play none none reverse"
+                    }
+                }
+            );
+        });
+
+        // Create enhanced cosmic particles
+        createCosmicParticles();
+
+        // Electromagnetic field effect
+        function createElectromagneticField() {
+            const field = document.querySelector('.electromagnetic-field');
+            const canvas = document.createElement('canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            field.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            let time = 0;
+
+            function drawField() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+                ctx.lineWidth = 1;
+
+                for (let x = 0; x < canvas.width; x += 50) {
+                    for (let y = 0; y < canvas.height; y += 50) {
+                        const offsetX = Math.sin(time + x * 0.01) * 20;
+                        const offsetY = Math.cos(time + y * 0.01) * 20;
+
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(x + offsetX, y + offsetY);
+                        ctx.stroke();
+                    }
+                }
+
+                time += 0.02;
+                requestAnimationFrame(drawField);
+            }
+            drawField();
+        }
+        createElectromagneticField();
+
+        // Smooth scrolling
+        function scrollToTimeline() {
+            document.getElementById('timeline').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Add sound effects (optional)
+        function addSoundEffect() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            function createSolarWindSound() {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(80, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 2);
+
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.5);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 2);
+            }
+
+            // Trigger sound on scroll to solar storm section
+            ScrollTrigger.create({
+                trigger: '.solar-storm-viz',
+                start: 'top center',
+                onEnter: () => {
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                    createSolarWindSound();
+                }
+            });
+        }
+
+        // Initialize sound effects (with user interaction)
+        document.addEventListener('click', addSoundEffect, { once: true });
+        // Enhanced Solar Storm Intensity Slider
+        const intensitySlider = document.getElementById('intensitySlider');
+        const intensityDisplay = document.getElementById('intensity-display');
+        const intensityEffects = document.getElementById('intensity-effects');
+
+        const intensityLevels = {
+            1: { name: "G1 Minor", effects: "Minor grid fluctuations, minor satellite disruption" },
+            2: { name: "G2 Moderate", effects: "Grid voltage alarms, satellite drag increases" },
+            3: { name: "G3 Strong", effects: "Grid corrections needed, GPS accuracy degraded" },
+            4: { name: "G4 Severe", effects: "Grid instability, satellite navigation problems" },
+            5: { name: "G5 Extreme", effects: "Grid blackouts, satellite loss of control" },
+            6: { name: "G6 Exceptional", effects: "Regional blackouts, aviation disruption" },
+            7: { name: "G7 Outstanding", effects: "Multi-state blackouts, communications failure" },
+            8: { name: "G8 Unprecedented", effects: "Continental blackouts, satellite constellation loss" },
+            9: { name: "Carrington Class", effects: "Global power grid failure, satellite destruction, internet collapse" },
+            10: { name: "Extinction Level", effects: "Complete technological civilization collapse, atmosphere loss risk" }
+        };
+
+        if (intensitySlider) {
+            intensitySlider.addEventListener('input', (e) => {
+                const level = parseInt(e.target.value);
+                const info = intensityLevels[level];
+                intensityDisplay.textContent = `Level ${level}: ${info.name}`;
+                intensityEffects.textContent = info.effects;
+
+                // Update particle intensity
+                particleMaterial.size = 0.2 + (level * 0.1);
+                particleMaterial.opacity = 0.3 + (level * 0.07);
+
+                // Update magnetosphere color based on intensity
+                const hue = 180 - (level * 18); // Blue to red
+                magnetosphereMaterial.color.setHSL(hue / 360, 1, 0.5);
+            });
+        }
+
+        // Enhanced Particle Effects
+        function createCosmicParticles() {
+            const container = document.querySelector('.aurora-particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 8 + 6) + 's';
+
+                // Random colors for cosmic effect
+                const colors = ['#ff4081', '#3f51b5', '#00bcd4', '#9c27b0', '#ff9800'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.background = `radial-gradient(circle, ${color}, transparent)`;
+                particle.style.boxShadow = `0 0 10px ${color}`;
+
+                container.appendChild(particle);
+            }
+        }
+
+        // Enhanced GSAP animations for historical events
+        gsap.utils.toArray('.historical-event').forEach((event, index) => {
+            gsap.fromTo(event,
+                { opacity: 0, y: 30, scale: 0.95, rotationY: 5 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    rotationY: 0,
+                    duration: 1.2,
+                    delay: index * 0.15,
+                    ease: "back.out(1.7)",
+                    scrollTrigger: {
+                        trigger: event,
+                        start: "top 85%",
+                        toggleActions: "play none none reverse"
+                    }
+                }
+            );
+        });
+
+        gsap.utils.toArray('.preparedness-card').forEach((card, index) => {
+            gsap.fromTo(card,
+                { opacity: 0, y: 30, rotationY: 15 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    rotationY: 0,
+                    duration: 1,
+                    delay: index * 0.15,
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 85%",
+                        toggleActions: "play none none reverse"
+                    }
+                }
+            );
+        });
+
+        gsap.utils.toArray('.eyewitness-account').forEach((account, index) => {
+            gsap.fromTo(account,
+                { opacity: 0, x: index % 2 === 0 ? -50 : 50 },
+                {
+                    opacity: 1,
+                    x: 0,
+                    duration: 1,
+                    scrollTrigger: {
+                        trigger: account,
+                        start: "top 80%",
+                        toggleActions: "play none none reverse"
+                    }
+                }
+            );
+        });
+
+        // Minimize button functionality for intensity controls
+        const intensityControls = document.getElementById('intensityControls');
+        const minimizeBtn = document.getElementById('minimizeBtn');
+
+        if (minimizeBtn && intensityControls) {
+            minimizeBtn.addEventListener('click', () => {
+                intensityControls.classList.toggle('minimized');
+                minimizeBtn.textContent = intensityControls.classList.contains('minimized') ? '+' : '−';
+            });
+
+            // Click to expand when minimized
+            intensityControls.addEventListener('click', (e) => {
+                if (intensityControls.classList.contains('minimized') && e.target === intensityControls) {
+                    intensityControls.classList.remove('minimized');
+                    minimizeBtn.textContent = '−';
+
+                    // Show storm text again when expanded
+                    const stormText = document.getElementById('storm-text');
+                    if (stormText) {
+                        stormText.style.opacity = '1';
+                    }
+                }
+            });
+
+            // Also hide text when minimize button is clicked
+            minimizeBtn.addEventListener('click', () => {
+                const stormText = document.getElementById('storm-text');
+                if (stormText && !intensityControls.classList.contains('minimized')) {
+                    stormText.style.opacity = '0';
+                }
+            });
+        }
+
+        // Auto-fade storm text after 8 seconds
+        setTimeout(() => {
+            const stormText = document.getElementById('storm-text');
+            if (stormText) {
+                stormText.style.opacity = '0';
+            }
+        }, 8000);
+
+    </script>
+</body>
+</html>
